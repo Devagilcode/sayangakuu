@@ -1,7 +1,13 @@
 
-import React, { useState } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Heart, Stars, ArrowRight, RotateCcw } from "lucide-react";
+import {
+  Heart,
+  ArrowRight,
+  RotateCcw,
+  Music2,
+  VolumeX
+} from "lucide-react";
 import "./App.css";
 
 const cerita = [
@@ -40,10 +46,52 @@ export default function App() {
   const [page, setPage] = useState(0);
   const [finished, setFinished] = useState(false);
   const [loved, setLoved] = useState(false);
+  const [musicPlaying, setMusicPlaying] = useState(false);
+
+  const audioRef = useRef(null);
+
+  // Musik background
+  const playMusic = async () => {
+    const audio = audioRef.current;
+    if (!audio) return;
+
+    try {
+      await audio.play();
+      setMusicPlaying(true);
+    } catch (error) {
+      console.log("Autoplay menunggu interaksi pengguna:", error);
+    }
+  };
+
+  const toggleMusic = async () => {
+    const audio = audioRef.current;
+    if (!audio) return;
+
+    if (audio.paused) {
+      await playMusic();
+    } else {
+      audio.pause();
+      setMusicPlaying(false);
+    }
+  };
+
+  // Mencoba memutar musik saat web dibuka
+  useEffect(() => {
+    const audio = audioRef.current;
+    if (!audio) return;
+
+    audio.volume = 0.45;
+    playMusic();
+  }, []);
+
+  const startStory = () => {
+    playMusic();
+    setStarted(true);
+  };
 
   const next = () => {
     if (page < cerita.length - 1) {
-      setPage(page + 1);
+      setPage((prev) => prev + 1);
     } else {
       setFinished(true);
     }
@@ -58,10 +106,42 @@ export default function App() {
 
   return (
     <div className="love-app">
+      {/* Background Music */}
+      <audio
+        ref={audioRef}
+        src={`${import.meta.env.BASE_URL}music/romantis.mp3`}
+        loop
+        preload="auto"
+        onPlay={() => setMusicPlaying(true)}
+        onPause={() => setMusicPlaying(false)}
+      />
+
+      {/* Tombol Musik */}
+      <motion.button
+        className="music-toggle"
+        onClick={toggleMusic}
+        initial={{ opacity: 0, scale: 0 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{ delay: 0.5 }}
+        aria-label={
+          musicPlaying ? "Matikan musik" : "Putar musik"
+        }
+        title={
+          musicPlaying ? "Pause musik" : "Putar musik"
+        }
+      >
+        {musicPlaying ? (
+          <Music2 size={22} />
+        ) : (
+          <VolumeX size={22} />
+        )}
+      </motion.button>
+
+      {/* Background Glow */}
       <div className="ambient ambient-one" />
       <div className="ambient ambient-two" />
 
-      {/* Bintang berkelip */}
+      {/* Bintang */}
       <div className="star-field">
         {Array.from({ length: 55 }).map((_, i) => (
           <span
@@ -77,7 +157,7 @@ export default function App() {
         ))}
       </div>
 
-      {/* Hati beterbangan */}
+      {/* Hati Beterbangan */}
       <div className="floating-hearts">
         {Array.from({ length: 18 }).map((_, i) => (
           <span
@@ -100,19 +180,23 @@ export default function App() {
         transition={{ duration: 1 }}
       >
         <div className="logo">
-          <span>✦</span> ALIA PRAMESTI <span>✦</span>
+          <span>✦</span> LUCITA <span>✦</span>
         </div>
 
         <AnimatePresence mode="wait">
           {!started ? (
+            // HALAMAN PEMBUKA
             <motion.div
               key="intro"
               className="content"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0, scale: 0.9 }}
+              transition={{ duration: 0.6 }}
             >
-              <p className="eyebrow">A LITTLE PIECE OF MY HEART</p>
+              <p className="eyebrow">
+                A LITTLE PIECE OF MY HEART
+              </p>
 
               <div className="moon-scene">
                 <motion.div
@@ -174,18 +258,32 @@ export default function App() {
 
               <button
                 className="primary-button"
-                onClick={() => setStarted(true)}
+                onClick={startStory}
               >
-                Baca Ceritaku <ArrowRight size={17} />
+                Baca Ceritaku
+                <ArrowRight size={17} />
               </button>
             </motion.div>
           ) : !finished ? (
+            // HALAMAN CERITA
             <motion.div
               key={`story-${page}`}
               className="content story-content"
-              initial={{ opacity: 0, y: 35, filter: "blur(8px)" }}
-              animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
-              exit={{ opacity: 0, y: -25, filter: "blur(8px)" }}
+              initial={{
+                opacity: 0,
+                y: 35,
+                filter: "blur(8px)"
+              }}
+              animate={{
+                opacity: 1,
+                y: 0,
+                filter: "blur(0px)"
+              }}
+              exit={{
+                opacity: 0,
+                y: -25,
+                filter: "blur(8px)"
+              }}
               transition={{ duration: 0.65 }}
             >
               <motion.div
@@ -194,18 +292,28 @@ export default function App() {
                   scale: [1, 1.13, 1],
                   rotate: [-5, 5, -5]
                 }}
-                transition={{ duration: 3, repeat: Infinity }}
+                transition={{
+                  duration: 3,
+                  repeat: Infinity
+                }}
               >
-                <Heart size={60} fill="#f5a6c4" strokeWidth={1} />
+                <Heart
+                  size={60}
+                  fill="#f5a6c4"
+                  strokeWidth={1}
+                />
               </motion.div>
 
               <p className="eyebrow">
-                OUR LITTLE STORY · {String(page + 1).padStart(2, "0")}
+                OUR LITTLE STORY ·{" "}
+                {String(page + 1).padStart(2, "0")}
               </p>
 
               <h2>{cerita[page].judul}</h2>
 
-              <p className="story-text">{cerita[page].isi}</p>
+              <p className="story-text">
+                {cerita[page].isi}
+              </p>
 
               <div className="progress">
                 {cerita.map((_, i) => (
@@ -216,7 +324,10 @@ export default function App() {
                 ))}
               </div>
 
-              <button className="primary-button" onClick={next}>
+              <button
+                className="primary-button"
+                onClick={next}
+              >
                 {page === cerita.length - 1
                   ? "Satu Hal Terakhir ♡"
                   : "Lanjut Ceritanya"}
@@ -224,11 +335,18 @@ export default function App() {
               </button>
             </motion.div>
           ) : (
+            // HALAMAN PENUTUP
             <motion.div
               key="ending"
               className="content ending"
-              initial={{ opacity: 0, scale: 0.75 }}
-              animate={{ opacity: 1, scale: 1 }}
+              initial={{
+                opacity: 0,
+                scale: 0.75
+              }}
+              animate={{
+                opacity: 1,
+                scale: 1
+              }}
               transition={{ duration: 0.9 }}
             >
               <motion.div
@@ -241,12 +359,17 @@ export default function App() {
                     "drop-shadow(0 0 15px #f5a6c4)"
                   ]
                 }}
-                transition={{ duration: 2, repeat: Infinity }}
+                transition={{
+                  duration: 2,
+                  repeat: Infinity
+                }}
               >
                 ♥
               </motion.div>
 
-              <p className="eyebrow">MY FAVORITE PERSON</p>
+              <p className="eyebrow">
+                MY FAVORITE PERSON
+              </p>
 
               <h1>
                 Aku Ingin Kita,
@@ -275,28 +398,42 @@ export default function App() {
                     onClick={() => setLoved(true)}
                     exit={{ opacity: 0 }}
                   >
-                    Simpan Rasa Ini <Heart size={17} />
+                    Simpan Rasa Ini
+                    <Heart size={17} />
                   </motion.button>
                 ) : (
                   <motion.p
                     key="accepted"
                     className="love-response"
-                    initial={{ opacity: 0, scale: 0.5 }}
-                    animate={{ opacity: 1, scale: 1 }}
+                    initial={{
+                      opacity: 0,
+                      scale: 0.5
+                    }}
+                    animate={{
+                      opacity: 1,
+                      scale: 1
+                    }}
                   >
-                    ♡ Kamu adalah bagian terindah dari harapanku. ♡
+                    ♡ Kamu adalah bagian terindah
+                    dari harapanku. ♡
                   </motion.p>
                 )}
               </AnimatePresence>
 
-              <button className="reset-button" onClick={reset}>
-                <RotateCcw size={15} /> Ulangi Cerita
+              <button
+                className="reset-button"
+                onClick={reset}
+              >
+                <RotateCcw size={15} />
+                Ulangi Cerita
               </button>
             </motion.div>
           )}
         </AnimatePresence>
 
-        <footer>WITH ALL MY HEART · ALIA PRAMESTI ♡</footer>
+        <footer>
+          WITH ALL MY HEART · LUCITA ♡
+        </footer>
       </motion.div>
     </div>
   );
