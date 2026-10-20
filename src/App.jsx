@@ -180,7 +180,7 @@ export default function App() {
         transition={{ duration: 1 }}
       >
         <div className="logo">
-          <span>✦</span> LUCITA <span>✦</span>
+          <span>✦</span> ALIA PRAMESTI <span>✦</span>
         </div>
 
         <AnimatePresence mode="wait">
@@ -432,7 +432,7 @@ export default function App() {
         </AnimatePresence>
 
         <footer>
-          WITH ALL MY HEART · LUCITA ♡
+          WITH ALL MY HEART · ALIA PRAMESTI ♡
         </footer>
       </motion.div>
     </div>
