@@ -1,5 +1,4 @@
-
-name: Deploy Lucita Love Story
+name: Deploy Love Story
 
 on:
   push:
